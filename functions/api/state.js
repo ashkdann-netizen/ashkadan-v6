@@ -1,0 +1,5 @@
+import {json,readJson,requireAdmin} from '../_auth.js';
+const KEY='site:public:v1';
+const MAX_STATE_BYTES=2*1024*1024;
+export async function onRequestGet({env}) {if(!env.ASHKADAN_KV)return json({error:'ذخیره‌ساز تنظیم نشده است.'},503);const data=await env.ASHKADAN_KV.get(KEY,'json');return json({data:data||{}})}
+export async function onRequestPut({request,env}) {const a=await requireAdmin(request,env);if(!a.ok)return a.response;if(!env.ASHKADAN_KV)return json({error:'ذخیره‌ساز تنظیم نشده است.'},503);try{const b=await readJson(request,MAX_STATE_BYTES);if(!b.data||typeof b.data!=='object'||Array.isArray(b.data))return json({error:'ساختار داده معتبر نیست.'},400);const raw=JSON.stringify(b.data);if(new TextEncoder().encode(raw).length>MAX_STATE_BYTES)return json({error:'حجم اطلاعات بیش از ۲ مگابایت است. تصاویر باید در فضای R2 ذخیره شوند.'},413);await env.ASHKADAN_KV.put(KEY,raw);return json({ok:true,savedAt:new Date().toISOString()})}catch(e){return json({error:e.message||'ذخیره‌سازی ناموفق بود.'},400)}}

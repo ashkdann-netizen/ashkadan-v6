@@ -1,0 +1,4 @@
+ASHKADAN SIGNATURE V6
+Base: Signature V5 full-featured Cloudflare Pages project
+Includes: full-screen branded entrance, secure in-site admin username/password login, session restore, server-side KV persistence, editable social links including Rubika, and preserved visual editor.
+Production deployment still requires real Cloudflare project/KV/R2 bindings and secrets.

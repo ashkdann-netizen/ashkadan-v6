@@ -1,0 +1,14 @@
+{
+  "name": "ashkadan-site-v6",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public",
+    "check": "node ./scripts/check.mjs",
+    "test": "node ./scripts/test-api.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
