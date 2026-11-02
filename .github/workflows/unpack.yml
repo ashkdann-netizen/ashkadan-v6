@@ -1,0 +1,54 @@
+
+name: Extract Ashkadan V6
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract and install website
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ZIP_FILE="$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)"
+
+          if [ -z "$ZIP_FILE" ]; then
+            echo "ZIP file not found"
+            exit 1
+          fi
+
+          mkdir -p /tmp/ashkadan-v6
+          unzip -q "$ZIP_FILE" -d /tmp/ashkadan-v6
+
+          SOURCE="/tmp/ashkadan-v6/ashkadan-signature-v6"
+
+          test -f "$SOURCE/public/index.html"
+          test -d "$SOURCE/functions"
+          test -f "$SOURCE/wrangler.toml"
+          test -f "$SOURCE/package.json"
+
+          cp -a "$SOURCE/." .
+
+          rm -f "$ZIP_FILE"
+
+      - name: Commit extracted website
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Install Ashkadan V6 website"
+            git push
+          fi
+          
