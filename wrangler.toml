@@ -1,12 +1,6 @@
-name = "REPLACE_WITH_EXISTING_PAGES_PROJECT"
+name = "ashkadan-v6"
 compatibility_date = "2026-11-02"
 pages_build_output_dir = "./public"
 
-[[kv_namespaces]]
-binding = "ASHKADAN_KV"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
-
-# Create an R2 bucket named ashkadan-media, then uncomment and configure:
-# [[r2_buckets]]
-# binding = "ASHKADAN_MEDIA"
-# bucket_name = "ashkadan-media"
+# Bind a free Cloudflare KV namespace in Pages > Settings > Functions > KV namespace bindings.
+# Binding name must be ASHKADAN_KV.

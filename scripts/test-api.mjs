@@ -39,3 +39,12 @@ const sessionReq=new Request('https://example.test/api/admin/session',{headers:{
 const stateReq=new Request('https://example.test/api/state',{method:'PUT',headers:{Cookie:cookie.split(';')[0],'X-CSRF-Token':loginBody.csrf,'Content-Type':'application/json'},body:JSON.stringify({data:{phone:'09126110306',customSocials:[]}})});const stateRes=await saveSiteState({request:stateReq,env:authEnv});assert.equal(stateRes.status,200);assert.equal(JSON.parse(authStore.get('site:public:v1')).phone,'09126110306');
 const wrongReq=new Request('https://example.test/api/admin/login',{method:'POST',headers:{Origin:'https://example.test','Content-Type':'application/json','CF-Connecting-IP':'198.51.100.11'},body:JSON.stringify({username:'admin',password:'incorrect-password'})});const wrongRes=await adminLogin({request:wrongReq,env:authEnv});assert.equal(wrongRes.status,401);
 console.log('Admin auth tests passed: secure login cookie, session validation, CSRF-protected KV save, wrong-password rejection.');
+
+import {onRequestGet as privateManagerRoute} from '../functions/manage/[token].js';
+import {onRequestGet as managerGateCheck} from '../functions/api/admin/gate.js';
+const privateEnv={...authEnv,ADMIN_PATH_TOKEN:'a'.repeat(48)};
+const badGate=await privateManagerRoute({request:new Request('https://example.test/manage/wrong'),env:privateEnv,params:{token:'wrong'}});assert.equal(badGate.status,404);
+const goodGate=await privateManagerRoute({request:new Request('https://example.test/manage/'+privateEnv.ADMIN_PATH_TOKEN),env:privateEnv,params:{token:privateEnv.ADMIN_PATH_TOKEN}});assert.equal(goodGate.status,302);assert.match(goodGate.headers.get('Set-Cookie'),/__Host-ashkadan_gate=/);assert.match(goodGate.headers.get('Location'),/\?manage=1$/);
+const gateCookie=goodGate.headers.get('Set-Cookie').split(';')[0];const gateCheck=await managerGateCheck({request:new Request('https://example.test/api/admin/gate',{headers:{Cookie:gateCookie}}),env:privateEnv});assert.equal(gateCheck.status,200);assert.equal((await gateCheck.json()).authorized,true);
+const missingGate=await managerGateCheck({request:new Request('https://example.test/api/admin/gate'),env:privateEnv});assert.equal(missingGate.status,403);
+console.log('Private manager route tests passed: unknown token rejected, temporary HttpOnly gate issued, gate validation enforced.');
