@@ -20,10 +20,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          ZIP_FILE="$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)"
+          ZIP_FILE="./ASHKADAN-V6-IRAN-READY-REVIEWED.zip"
 
-          if [ -z "$ZIP_FILE" ]; then
-            echo "ZIP file not found"
+          if [ ! -f "$ZIP_FILE" ]; then
+            echo "New Ashkadan ZIP file not found"
             exit 1
           fi
 
@@ -37,6 +37,13 @@ jobs:
           test -f "$SOURCE/wrangler.toml"
           test -f "$SOURCE/package.json"
 
+          # Preserve Git metadata, workflows and ZIP archives.
+          find . -mindepth 1 -maxdepth 1 \
+            ! -name '.git' \
+            ! -name '.github' \
+            ! -name '*.zip' \
+            -exec rm -rf -- {} +
+
           cp -a "$SOURCE/." .
 
           rm -f "$ZIP_FILE"
@@ -48,7 +55,7 @@ jobs:
           git add -A
 
           if ! git diff --cached --quiet; then
-            git commit -m "Install Ashkadan V6 website"
+            git commit -m "Install reviewed Ashkadan V6 website"
             git push
           fi
           
